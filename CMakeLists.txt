@@ -7,6 +7,14 @@ set(INCLUDE_INSTALL_DIR /usr/local/include)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
+if(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++11")
+endif()
+if(WIN32)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+    include(GNUInstallDirs)
+endif()
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
@@ -24,7 +32,7 @@ if(CUDA_FOUND)
     message("INFO: Using CUDA version ${CUDA_VERSION}")
     add_definitions(-DHAVE_CUDA=1)
 else()
-    message("INFO: Building without CUDA support")
+    message("FATAL_ERROR: Building without CUDA support")
     add_definitions(-DHAVE_CUDA=0)
 endif()
 
@@ -90,23 +98,37 @@ target_include_directories(argon2-opencl PRIVATE
 gpuMiner/include/argon2-opencl
 gpuMiner/lib/argon2-opencl
 )
-target_link_libraries(argon2-opencl
-    argon2-gpu-common -lOpenCL
-)
+
+if (UNIX AND NOT APPLE)
+    target_link_libraries(argon2-opencl
+        argon2-gpu-common -lOpenCL
+    )
+endif()
+if (APPLE)
+    target_link_libraries(argon2-opencl
+        argon2-gpu-common "-framework OpenCL"
+    )
+endif()
+if (WIN32)
+    target_link_libraries(argon2-opencl
+        argon2-gpu-common OpenCL.lib
+    )
+endif()
 
 add_executable(xengpuminer
 gpuMiner/src/argon2-gpu-bench/cpuexecutive.cpp
 gpuMiner/src/argon2-gpu-bench/cudaexecutive.cpp
+gpuMiner/src/argon2-gpu-bench/openclexecutive.cpp
 gpuMiner/src/argon2-gpu-bench/benchmark.cpp
 gpuMiner/src/argon2-gpu-bench/main.cpp
 )
 target_include_directories(xengpuminer PRIVATE gpuMiner/src/argon2-gpu-bench)
 target_link_libraries(xengpuminer
-    argon2-cuda argon2
+    argon2-cuda argon2-opencl argon2 -lOpenCL
 )
 
 install(
-    TARGETS argon2-gpu-common argon2-cuda
+    TARGETS argon2-gpu-common argon2-opencl argon2-cuda
     DESTINATION ${LIBRARY_INSTALL_DIR}
 )
 install(FILES
