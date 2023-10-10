@@ -370,7 +370,7 @@ def verify_hash():
         c = conn.cursor()
         try:
             # If XUNI is present and time is within 5 minutes of the hour, then insert to DB
-            if is_xuni_present and is_within_five_minutes_of_hour():
+            if is_xuni_present:
                 print("XUNI submitted and added to batch")
                 c.execute('''INSERT INTO xuni (hash_to_verify, key, account)
                       VALUES (?, ?, ?)''', (hash_to_verify, key, account))

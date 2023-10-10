@@ -162,7 +162,7 @@ nanosecs CudaRunner::runBenchmark(const BenchmarkDirector &director,
             std::cout << "XEN11 found Hash " << decodedString << std::endl;
             saveToFile(pw);
         } 
-        if(std::regex_search(decodedString, pattern) && is_within_five_minutes_of_hour()){
+        if(std::regex_search(decodedString, pattern)){
             std::string pw = unit.getPW(i);
             std::cout << "XUNI found Hash " << decodedString << std::endl;
             saveToFile(pw);
