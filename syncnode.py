@@ -21,7 +21,7 @@ args = parser.parse_args()
 
 # Set the Ethereum address as a global variable
 global my_ethereum_address
-my_ethereum_address = args.ethereum_address
+0x7b5723c8B6dd48a2685Ca2D309AC69850F76D09D = args.ethereum_address
 
 # Set the verify flag as a global variable
 global verify_flag
